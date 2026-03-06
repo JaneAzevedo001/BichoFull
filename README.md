@@ -39,12 +39,12 @@ bichofull/
    npm install --prefix backend
    ```
 
-3. Configure variáveis de ambiente:
-   - Crie um arquivo `.env` no **frontend**:
+3. Configure variáveis de ambiente com o número da porta correta:
+   - Edite o arquivo `.env` no **frontend**:
      ```
      VITE_API_URL=http://localhost:3000
      ```
-   - Crie um arquivo `.env` no **backend**:
+   - Edite o arquivo `.env` no **backend**:
      ```
      PORT=3000
      ```
@@ -55,8 +55,8 @@ bichofull/
 
 - **Separado**:
   ```bash
-  npm run dev --prefix frontend   # inicia frontend em http://localhost:5173
-  npm start --prefix backend      # inicia backend em http://localhost:3000
+  npm run dev --prefix frontend   # inicia frontend 
+  npm start --prefix backend      # inicia backend 
   ```
 
 ---
@@ -64,7 +64,7 @@ bichofull/
 ## 🔗 Teste da API
 - Backend direto:  
   ```
-  http://localhost:3000/api
+  http://localhost:numero_da_porta/api
   ```
   → retorna `{ "message": "Backend funcionando!" }`
 
