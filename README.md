@@ -1,16 +1,77 @@
-# React + Vite
+# BichoFull
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Projeto fullstack com **React (Vite)** no frontend e **Node.js + Express** no backend, com comunicação via proxy.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tecnologias
+- **Frontend:** React + Vite  
+- **Backend:** Node.js + Express  
+- **Proxy:** configurado no Vite para redirecionar chamadas `/api`  
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Estrutura
+```
+bichofull/
+  backend/
+    src/
+    package.json
+  src/
+    package.json
+  .gitignore
+  README.md
+```
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Configuração
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/JaneAzevedo001/BichoFull.git
+   cd bichofull
+   ```
+
+2. Instale as dependências:
+   ```bash
+   npm install --prefix src
+   npm install --prefix backend
+   ```
+
+3. Configure variáveis de ambiente:
+   - Crie um arquivo `.env` no **frontend**:
+     ```
+     VITE_API_URL=http://localhost:3000
+     ```
+   - Crie um arquivo `.env` no **backend**:
+     ```
+     PORT=3000
+     ```
+
+---
+
+## Rodando o projeto
+
+- **Separado**:
+  ```bash
+  npm run dev --prefix frontend   # inicia frontend em http://localhost:5173
+  npm start --prefix backend      # inicia backend em http://localhost:3000
+  ```
+
+---
+
+## 🔗 Teste da API
+- Backend direto:  
+  ```
+  http://localhost:3000/api
+  ```
+  → retorna `{ "message": "Backend funcionando!" }`
+
+- Frontend:  
+  ```
+  http://localhost:5173
+  ```
+  → exibe a mensagem do backend na tela.
+
+---
