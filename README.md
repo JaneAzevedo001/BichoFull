@@ -61,7 +61,7 @@ bichofull/
 
 ---
 
-## 🔗 Teste da API
+## Teste da API
 - Backend direto:  
   ```
   http://localhost:numero_da_porta/api
