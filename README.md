@@ -42,11 +42,11 @@ bichofull/
 3. Configure variáveis de ambiente com o número da porta correta:
    - Edite o arquivo `.env` no **frontend**:
      ```
-     VITE_API_URL=http://localhost:3000
+     VITE_API_URL=http://localhost:numero_da_porta_aqui
      ```
    - Edite o arquivo `.env` no **backend**:
      ```
-     PORT=3000
+     PORT=numero_da_porta_aqui
      ```
 
 ---
@@ -70,7 +70,7 @@ bichofull/
 
 - Frontend:  
   ```
-  http://localhost:5173
+  http://localhost:numero_da_porta
   ```
   → exibe a mensagem do backend na tela.
 
