@@ -11,20 +11,6 @@ Projeto fullstack com **React (Vite)** no frontend e **Node.js + Express** no ba
 
 ---
 
-## Estrutura
-```
-bichofull/
-  backend/
-    src/
-    package.json
-  src/
-    package.json
-  .gitignore
-  README.md
-```
-
----
-
 ## Configuração
 
 1. Clone o repositório:
