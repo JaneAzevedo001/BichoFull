@@ -1,11 +1,34 @@
+import { useAuth } from "../../context/UserContext";
+
 export default function UserMetaCard() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          Carregando usuário...
+        </p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+        <p className="text-center text-gray-500 dark:text-gray-400">
+          Nenhum usuário logado
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-            {/* Ícone no lugar da imagem */}
-            <div className="w-20 h-20 flex items-center justify-center border border-gray-200 rounded-full dark:border-gray-700 dark:bg-gray-800">
+            {/* <div className="w-20 h-20 flex items-center justify-center border border-gray-200 rounded-full dark:border-gray-700 dark:bg-gray-800">
               <svg
                 className="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                 width="64"
@@ -21,16 +44,37 @@ export default function UserMetaCard() {
                   fill=""
                 />
               </svg>
+            </div> */}
+
+            <div className="w-20 h-20 flex items-center justify-center border border-gray-200 rounded-full dark:border-gray-700 dark:bg-gray-800">
+              <span className="text-xl font-bold text-gray-600 dark:text-gray-300">
+                {user.full_name?.charAt(0).toUpperCase()}
+              </span>
             </div>
 
-            <div className="order-3 xl:order-2">
-              <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                Musharof Chowdhury
-              </h4>
-              <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Usuário
-                </p>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+              <div className="col-span-2 lg:col-span-1">
+                <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+                  {user.full_name}
+                </h4>
+                <div className="col-span-2 lg:col-span-1 text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Usuário
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-span-2 lg:col-span-1">
+                <h6 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+                  {user.created_at
+                    ? new Date(user.created_at).toLocaleDateString('pt-Br')
+                    : "-"}
+                </h6>
+                <div className="col-span-2 lg:col-span-1 text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Data de cadastro
+                  </p>
+                </div>
               </div>
             </div>
           </div>

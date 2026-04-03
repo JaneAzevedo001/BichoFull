@@ -1,3 +1,4 @@
+import PageMeta from "../../components/common/PageMeta";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/button/Button";
 import { ThemeToggleButton } from "../../components/common/ThemeToggleButton";
@@ -6,6 +7,8 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
+    <>
+    <PageMeta title="Home" description="" />
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 px-6">
       <img
         src="/images/logo/logo.svg"
@@ -34,7 +37,7 @@ export default function Home() {
           <Button
             className="bg-green-500 hover:bg-green-600"
             size="md"
-            onClick={() => navigate("/bet")}
+            onClick={() => navigate("/signup")}
           >
             Fazer Aposta
           </Button>
@@ -61,7 +64,7 @@ export default function Home() {
         <Button
           className="bg-orange-500 hover:bg-orange-600"
           size="md"
-          onClick={() => navigate("/bet")}
+          onClick={() => navigate("/signup")}
         >
           Começar Agora
         </Button>
@@ -95,5 +98,6 @@ export default function Home() {
         <ThemeToggleButton />
       </div>
     </div>
+    </>
   );
 }

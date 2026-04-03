@@ -1,14 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
-import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import Alert from "../ui/alert/Alert";
+import { useAuth } from "../../context/UserContext";
+
+interface LoginFormData {
+  email: string;
+  password: string;
+}
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
+  const [form, setForm] = useState<LoginFormData>({ email: "", password: "" });
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+  const { login, error, loading, user } = useAuth();
+
+  // Sincroniza erros do contexto de autenticação com o estado local
+  useEffect(() => {
+    if (error) {
+      // Garante que a mensagem seja uma string válida
+      const message = typeof error === "string" 
+        ? error 
+        : "Credenciais inválidas. Tente novamente.";
+      setErrorMsg(message);
+    }
+  }, [error]);
+
+  // Limpa estados ao desmontar o componente (boa prática)
+  useEffect(() => {
+    return () => {
+      setErrorMsg(null);
+    };
+  }, []);
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    if (loading) return; // Previne clique duplo
+    setErrorMsg(null);
+    await login(form);
+  };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/welcome");
+    }
+  }, [user, navigate]);
+
   return (
     <div className="flex flex-col flex-1">
       <div className="w-full max-w-md pt-10 mx-auto">
@@ -20,6 +62,19 @@ export default function SignInForm() {
           Voltar
         </Link>
       </div>
+
+      <div className="w-full max-w-md pt-10 mx-auto">
+        {/* Renderiza alerta de erro */}
+        {errorMsg && (
+          <Alert
+            variant="error"
+            title="Erro"
+            message={errorMsg}
+            showLink={false}
+          />
+        )}
+      </div>
+
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
@@ -30,69 +85,76 @@ export default function SignInForm() {
               Digite seu e-mail e senha para fazer login!
             </p>
           </div>
-          <div>
-            <form>
-              <div className="space-y-6">
-                <div>
-                  <Label>
-                    Email <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <Input placeholder="exemplo@gmail.com" />
-                </div>
-                <div>
-                  <Label>
-                    Senha <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Insira sua senha"
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Checkbox checked={isChecked} onChange={setIsChecked} />
-                    <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                      Lembrar de mim
-                    </span>
-                  </div>
-                  <Link
-                    to="/reset-password"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-6">
+              <div>
+                <Label>
+                  Email <span className="text-error-500">*</span>
+                </Label>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="exemplo@gmail.com"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>
+                  Senha <span className="text-error-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Insira sua senha"
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                  />
+                  <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
-                <div>
-                  <Button className="w-full" size="sm">
-                    Entrar
-                  </Button>
+                    {showPassword ? (
+                      <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                    ) : (
+                      <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                    )}
+                  </span>
                 </div>
               </div>
-            </form>
-
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Não tem uma conta? {""}
+              <div className="flex items-center justify-between">
                 <Link
-                  to="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                  to="/reset-password"
+                  className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
                 >
-                  Registrar
+                  Esqueceu a senha?
                 </Link>
-              </p>
+              </div>
+              <div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="sm"
+                  disabled={loading}
+                >
+                  {loading ? "Entrando..." : "Entrar"}
+                </Button>
+              </div>
             </div>
+          </form>
+          <div className="mt-5">
+            <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
+              Não tem uma conta?{" "}
+              <Link
+                to="/signup"
+                className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
+              >
+                Registrar
+              </Link>
+            </p>
           </div>
         </div>
       </div>

@@ -1,55 +1,70 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Buttons from "./pages/UiElements/Buttons";
-import BasicTables from "./pages/Tables/BasicTables";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Bet from "./pages/Bet";
 import Welcome from "./pages/Welcome";
 import History from "./pages/History";
-
+import PrivateRoute from "./components/common/PrivateRoute";
+import { UserProvider } from "./context/UserContext";
 
 export default function App() {
   return (
-    <>    
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          <Route index path="/" element={<Home />} />
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>            
-            <Route index path="bet" element={<Bet />} />
+    <>
+      <UserProvider>
+        <Router>
+          <ScrollToTop />
+          <Routes>
+            <Route index path="/" element={<Home />} />
+            {/* Auth Layout */}
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/welcome" element={<Welcome />} />
-            <Route path="/history" element={<History />} />
+            {/* Dashboard Layout */}
+            <Route element={<AppLayout />}>
+              <Route
+                path="/bet"
+                element={
+                  <PrivateRoute>
+                    <Bet />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <UserProfiles />{" "}
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/welcome"
+                element={
+                  <PrivateRoute>
+                    <Welcome />{" "}
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <PrivateRoute>
+                    <History />{" "}
+                  </PrivateRoute>
+                }
+              />
+            </Route>
 
-
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
-
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-
-          </Route>
-
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
+            {/* Fallback Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </UserProvider>
     </>
   );
 }

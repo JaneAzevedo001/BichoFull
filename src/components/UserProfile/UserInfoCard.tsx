@@ -3,14 +3,65 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/UserContext";
+import api from "../../services/api";
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
-  const handleSave = () => {
-    // Handle save logic here
-    console.log("Saving changes...");
-    closeModal();
+  const { user, setUser } = useAuth();
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // Estado de loading
+
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || "");
+      setEmail(user.email || "");
+      setPassword(""); 
+    }
+  }, [user, isOpen]);
+
+const handleSave = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!user) return; // se não houver usuário, não faz nada
+  
+  setLoading(true);
+
+  try {
+      const token = localStorage.getItem("token");
+      const response = await api.put(
+        `/users/${user.id}`,
+        { 
+          full_name: fullName, 
+          email, 
+          // Envia a senha apenas se o usuário digitou algo novo
+          ...(password && { password }) 
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUser(response.data);
+      closeModal();
+      alert("Perfil atualizado com sucesso!");
+    } catch (err) {
+      console.error("Erro ao salvar:", err);
+      alert("Erro ao atualizar perfil. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (!user) {
+    return (
+      <div className="p-5 border rounded-2xl">
+        <p className="text-center text-gray-500">Nenhum usuário logado</p>
+      </div>
+    );
+  }
+
+
   return (
     <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -19,13 +70,13 @@ export default function UserInfoCard() {
             Informações Pessoais
           </h4>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-            <div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-7 2xl:gap-x-32">
+            <div className="col-span-2 lg:col-span-1">
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 Nome Completo
               </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
+              <p className=" text-sm font-medium text-gray-800 dark:text-white/90">
+                {user.full_name}
               </p>
             </div>
 
@@ -34,10 +85,10 @@ export default function UserInfoCard() {
                 E-mail
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+                {user.email}
               </p>
             </div>
-            <div>
+            <div className="col-span-2 lg:col-span-1">
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 Senha
               </p>
@@ -90,25 +141,38 @@ export default function UserInfoCard() {
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Nome Completo</Label>
-                    <Input type="text" value="Jane Azevedo" />
+                    <Input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
                   </div>
                   <div className="col-span-2 lg:col-span-1">
                     <Label>E-mail</Label>
-                    <Input type="text" value="exemplo@gmail.com" />
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                   <div className="col-span-2 lg:col-span-1">
                     <Label>Senha</Label>
-                    <Input type="password" value="12345678" />
+
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
+              <Button type="button" size="sm" variant="outline" onClick={closeModal}>
                 Fechar
               </Button>
-              <Button size="sm" onClick={handleSave}>
-                Salvar Alterações
+              <Button type="submit" size="sm" onClick={handleSave}>
+                {loading?"Salvando...": "Salvar Alterações"}                
               </Button>
             </div>
           </form>

@@ -7,73 +7,44 @@ export default function Alerts() {
   return (
     <>
       <PageMeta
-        title="React.js Alerts Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Alerts Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Alerta"
+        description="Alertas"
       />
       <PageBreadcrumb pageTitle="Alerts" />
       <div className="space-y-5 sm:space-y-6">
-        <ComponentCard title="Success Alert">
+        <ComponentCard title="Registro no BichoFull">
           <Alert
             variant="success"
-            title="Success Message"
-            message="Be cautious when performing this action."
-            showLink={true}
-            linkHref="/"
-            linkText="Learn more"
-          />
-          <Alert
-            variant="success"
-            title="Success Message"
-            message="Be cautious when performing this action."
-            showLink={false}
+            title="Sucesso"
+            message="Usuário registrado com sucesso."
           />
         </ComponentCard>
+
         <ComponentCard title="Warning Alert">
           <Alert
             variant="warning"
-            title="Warning Message"
-            message="Be cautious when performing this action."
-            showLink={true}
-            linkHref="/"
-            linkText="Learn more"
+            title="Aviso"
+            message="Tenha cautela ao realizar esta ação."
           />
-          <Alert
-            variant="warning"
-            title="Warning Message"
-            message="Be cautious when performing this action."
-            showLink={false}
-          />
-        </ComponentCard>{" "}
+        </ComponentCard>
+
         <ComponentCard title="Error Alert">
           <Alert
             variant="error"
-            title="Error Message"
-            message="Be cautious when performing this action."
-            showLink={true}
-            linkHref="/"
-            linkText="Learn more"
-          />
-          <Alert
-            variant="error"
-            title="Error Message"
-            message="Be cautious when performing this action."
+            title="Erro no registro"
+            message="Erro ao se registrar na plataforma BichoFull."
             showLink={false}
           />
-        </ComponentCard>{" "}
+        </ComponentCard>
+
         <ComponentCard title="Info Alert">
           <Alert
             variant="info"
-            title="Info Message"
-            message="Be cautious when performing this action."
+            title="Informação"
+            message="Esta é uma mensagem informativa."
             showLink={true}
             linkHref="/"
-            linkText="Learn more"
-          />
-          <Alert
-            variant="info"
-            title="Info Message"
-            message="Be cautious when performing this action."
-            showLink={false}
+            linkText="Saiba mais"
           />
         </ComponentCard>
       </div>

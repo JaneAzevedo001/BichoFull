@@ -1,100 +1,171 @@
+import { useEffect, useState, useMemo } from "react";
+import api from "../services/api";
 import PageMeta from "../components/common/PageMeta";
+import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import ComponentCard from "../components/common/ComponentCard";
-import BasicTableOne from "../components/tables/BasicTables/BasicTableOne";
-import Button from "../components/ui/button/Button";
+import BetsTable from "../components/tables/BetsTable";
+import DrawsTable from "../components/tables/DrawsTable";
 
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  LineElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { useEffect, useState } from "react";
-import axios from "axios";
-
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
-
-interface HistoryData {
+interface Bet {
   id: number;
-  date: string;
-  ganhos: number;
-  perdas: number;
+  bet_type: string;
+  bet_value: string;
+  amount: number;
+  potential_prize: number;
+  status: string;
+  created_at: string;
+  animalName?: string;
 }
 
+interface Animal {
+  group_number: number;
+  animal_name: string;
+  dezenas: string[];
+}
+
+type DrawRecord = {
+  id: number;
+  draw_datetime: string;
+  status: string;
+  results: { drawn_thousand: string }[];
+  [key: string]: any; 
+};
+
 export default function History() {
-  const [history, setHistory] = useState<HistoryData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [partialData, setPartialData] = useState({
+    bets: [] as Bet[],
+    draws: [] as DrawRecord[],
+    animals: [] as Animal[],
+  });
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/history")
-      .then((res) => setHistory(res.data))
-      .catch((err) => console.error("Erro ao buscar histórico:", err));
+    const fetchData = async () => {
+      try {
+        setError(null);
+
+        const [betsRes, drawsRes, animalsRes] = await Promise.allSettled([
+          api.get("/history"),
+          api.get("/draws"),
+          api.get("/animals"),
+        ]);
+
+        console.log("Resposta /history:", betsRes);
+        console.log("Resposta /draws:", drawsRes);
+        console.log("Resposta /animals:", animalsRes);
+
+        // Processa cada resposta individualmente
+        const bets = betsRes.status === "fulfilled" ? betsRes.value.data : [];
+        const draws =
+          drawsRes.status === "fulfilled" ? drawsRes.value.data : [];
+        const animals =
+          animalsRes.status === "fulfilled" ? animalsRes.value.data : [];
+
+        setPartialData({ bets, draws, animals });
+
+        // Loga apenas as falhas para debug
+        if (drawsRes.status === "rejected") {
+          console.error("Falha ao buscar sorteios:", drawsRes.reason);
+          setError(
+            "Não foi possível carregar os sorteios. Tente novamente mais tarde.",
+          );
+        }
+      } catch (err: any) {
+        // Erro crítico (ex: token expirado, rede offline)
+        console.error("Erro crítico:", err);
+        setError(
+          err.response?.status === 401
+            ? "Sessão expirada. Faça login novamente."
+            : "Erro de conexão. Verifique sua internet.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const data = {
-    labels: history.map((item) => item.date),
-    datasets: [
-      {
-        label: "Ganhos",
-        data: history.map((item) => item.ganhos),
-        borderColor: "rgb(34,197,94)",
-        backgroundColor: "rgba(34,197,94,0.2)",
-        tension: 0.3,
-      },
-      {
-        label: "Perdas",
-        data: history.map((item) => item.perdas),
-        borderColor: "rgb(239,68,68)",
-        backgroundColor: "rgba(239,68,68,0.2)",
-        tension: 0.3,
-      },
-    ],
-  };
+  const betsWithAnimal = useMemo(() => {
+    return partialData.bets.map((bet) => {
+      let animalName = "";
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { position: "top" as const },
-      tooltip: { enabled: true },
-    },
-  };
+      if (bet.bet_type === "grupo") {
+        const found = partialData.animals.find(
+          (a) => a.group_number === Number(bet.bet_value),
+        );
+        animalName = found?.animal_name || "";
+      }
+
+      if (bet.bet_type === "dezena") {
+        const found = partialData.animals.find((a) =>
+          a.dezenas.includes(bet.bet_value),
+        );
+        animalName = found?.animal_name || "";
+      }
+
+      return { ...bet, animalName };
+    });
+  }, [partialData.bets, partialData.animals]); //Só recalcula se esses dados mudarem
+
+  if (loading)
+    return <p className="text-center py-6">Carregando histórico...</p>;
+
+  if (error && !partialData.bets.length && !partialData.draws.length) {
+    return (
+      <div className="text-center py-6 text-red-600">
+        <p>{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 text-sm underline"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>
-      <PageMeta title="Histórico" description="Ganhos e perdas" />
-
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90 mb-4">
-        Histórico de Apostas
-      </h3>
-
-      <div className="gap-6">
-        <ComponentCard title="Resumo">
-          <div className="space-y-2">
-            <p className="mb-4 dark:text-white/90">
-              Veja abaixo o gráfico com seus ganhos e perdas.
-            </p>
-            <div className="w-full">
-              <Line data={data} options={options} />
-            </div>
-          </div>
-        </ComponentCard>
-      </div>
-
-      <div className="grid grid-cols-12 gap-4 md:gap-6 mt-6">
-        <div className="col-span-12 xl:col-span-12">
-          <ComponentCard title="Detalhes das Apostas">
-            <BasicTableOne />
-          </ComponentCard>
+      <PageMeta
+        title="Histórico"
+        description="Histórico de apostas e sorteios"
+      />
+      <PageBreadcrumb pageTitle="Histórico" />
+      {error && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <p className="text-sm text-yellow-700">{error}</p>
         </div>
-      </div>
+      )}
 
-      <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
-        <Button className="w-full" size="md">
-          Fazer nova aposta
-        </Button>
+      <div className="space-y-6">
+        <ComponentCard title="Apostas Realizadas">
+          {partialData.bets.length > 0 ? (
+            <BetsTable bets={betsWithAnimal} />
+          ) : (
+            <p className="text-center text-gray-500 py-4">
+              {error?.includes("histórico")
+                ? "⚠️ Dados indisponíveis."
+                : "Nenhuma aposta encontrada."}
+            </p>
+          )}
+        </ComponentCard>
+
+        <ComponentCard title="Sorteios Realizados">
+          {partialData.draws.length > 0 ? (
+            <DrawsTable
+              draws={partialData.draws}
+              animals={partialData.animals}
+            />
+          ) : (
+            <p className="text-center text-gray-500 py-4">
+              {error?.includes("sorteios")
+                ? "⚠️ Sorteios indisponíveis."
+                : "Nenhum sorteio encontrado."}
+            </p>
+          )}
+        </ComponentCard>
       </div>
     </>
   );
