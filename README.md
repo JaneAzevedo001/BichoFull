@@ -25,13 +25,14 @@ O objetivo é **aprender a mecânica das apostas** e se divertir sem riscos fina
    cd caminho\para\BichoFull
 
 3. Crie o arquivo .env no backend:
+   ```bash
    DB_HOST=localhost
    DB_USER=root
    DB_PASS=sua_senha
    DB_NAME=bicho_full
    JWT_SECRET=seu_segredo
 
-4. Instale dependências:
+5. Instale dependências:
  ```bash
 npm install
 
