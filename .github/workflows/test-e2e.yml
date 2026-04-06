@@ -1,115 +1,24 @@
-# .github/workflows/test-e2e.yml
-name: 🧪 E2E Tests - Cadastro, Login, Aposta e Resultado
+// backend/config/swagger.js
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "BichoFull API",
+      version: "1.0.0",
+      description: "Documentação da API do sistema de apostas BichoFull",
+    },
+    servers: [
+      {
+        url: "http://localhost:3000/api",
+      },
+    ],
+  },
+  apis: ["./src/routes/*.js"], 
+};
 
-env:
-  NODE_VERSION: '22'
-  MYSQL_VERSION: '8.0'
+const specs = swaggerJsdoc(options);
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: rootpassword
-          MYSQL_DATABASE: bicho_full_test
-          MYSQL_USER: bicho_user
-          MYSQL_PASSWORD: bicho_pass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
-    steps:
-      - name: 📦 Checkout do código
-        uses: actions/checkout@v4
-
-      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
-
-      - name: 📦 Instalar dependências do backend
-        working-directory: ./backend
-        run: npm ci
-
-      - name: 📦 Instalar dependências do frontend
-        working-directory: ./frontend
-        run: npm ci
-
-      - name: ⚙️ Configurar variáveis de ambiente (backend)
-        working-directory: ./backend
-        run: |
-          cp .env.example .env
-          echo "DB_HOST=127.0.0.1" >> .env
-          echo "DB_PORT=3306" >> .env
-          echo "DB_USER=bicho_user" >> .env
-          echo "DB_PASSWORD=bicho_pass" >> .env
-          echo "DB_NAME=bicho_full_test" >> .env
-          echo "JWT_SECRET=test_secret_12345" >> .env
-          echo "NODE_ENV=test" >> .env
-
-      - name: ⚙️ Configurar variáveis de ambiente (frontend)
-        working-directory: ./frontend
-        run: |
-          cp .env.example .env
-          echo "VITE_API_URL=http://localhost:3000/api" >> .env
-          echo "VITE_APP_ENV=test" >> .env
-
-      - name: 🗄️ Aguardar MySQL e rodar migrations
-        run: |
-          # Aguardar MySQL ficar pronto
-          until mysql -h 127.0.0.1 -P 3306 -u bicho_user -pbicho_pass -e "SELECT 1" bicho_full_test &> /dev/null; do
-            echo "⏳ Aguardando MySQL..."
-            sleep 2
-          done
-          echo "✅ MySQL pronto!"
-          
-          # Rodar migrations do backend (ajuste conforme seu ORM)
-          cd backend
-          npx sequelize-cli db:migrate --env test || echo "⚠️ Migrations podem já estar aplicadas"
-
-      - name: 🚀 Iniciar backend em background
-        working-directory: ./backend
-        run: |
-          npm run start &
-          sleep 5  # Aguardar servidor subir
-          # Verificar se está rodando
-          curl -f http://localhost:3000/api/health || exit 1
-
-      - name: 🧪 Rodar testes E2E
-        working-directory: ./backend
-        run: npm run test:e2e
-        env:
-          CI: true
-          TEST_USER_EMAIL: "test_${{ github.run_id }}@example.com"
-          TEST_USER_PASSWORD: "Test@123456"
-
-      - name: 📊 Upload de relatório de testes
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            backend/coverage/
-            backend/test-results/
-          retention-days: 7
-
-      - name: 🔔 Notificar resultado (opcional)
-        if: failure()
-        run: |
-          echo "❌ Testes falharam! Verifique o log para detalhes."
-          # Aqui você pode integrar com Slack, Discord, etc.
+export { swaggerUi, specs };
